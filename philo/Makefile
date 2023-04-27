@@ -6,13 +6,13 @@
 #    By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/14 17:40:26 by arabenst          #+#    #+#              #
-#    Updated: 2023/04/27 08:53:22 by arabenst         ###   ########.fr        #
+#    Updated: 2023/04/27 08:58:05 by arabenst         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	philo
 
-SRCDIR		=	./src
+SRCDIR		=	.
 OBJDIR		=	./obj
 
 SRCS		=	$(wildcard $(SRCDIR)/*.c)
