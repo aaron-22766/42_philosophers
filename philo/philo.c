@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:24:16 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 18:43:08 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/05 19:08:11 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,17 +57,17 @@ static bool	ft_set_table(t_data *data)
 	data->threads = malloc(data->philo_amount * sizeof(pthread_t));
 	data->mtx_forks = malloc(data->philo_amount * sizeof(pthread_mutex_t));
 	if (!data->philos || !data->threads || !data->mtx_forks)
-		return (ft_error(ERR_MEM), RETURN_FAILURE);
+		return (free(data->threads), free(data->mtx_forks),
+			free(data->philos), ft_error(ERR_MEM), RETURN_FAILURE);
 	i = -1;
 	while (++i < data->philo_amount)
-		if (pthread_mutex_init(&data->mtx_forks[i], NULL)
-			|| pthread_mutex_init(&data->philos[i].mtx_eat_count, NULL)
-			|| pthread_mutex_init(&data->philos[i].mtx_time_last_eaten, NULL))
-			break ;
-	if (i != data->philo_amount
-		|| pthread_mutex_init(&data->mtx_exit, NULL)
-		|| pthread_mutex_init(&data->mtx_printf, NULL))
-		return (ft_error(ERR_MUTEX_INIT), RETURN_FAILURE);
+	{
+		pthread_mutex_init(&data->mtx_forks[i], NULL);
+		pthread_mutex_init(&data->philos[i].mtx_eat_count, NULL);
+		pthread_mutex_init(&data->philos[i].mtx_time_last_eaten, NULL);
+	}
+	pthread_mutex_init(&data->mtx_exit, NULL);
+	pthread_mutex_init(&data->mtx_printf, NULL);
 	i = -1;
 	while (++i < data->philo_amount)
 		ft_init_philo(data, i);
@@ -105,7 +105,7 @@ int	main(int argc, char **argv)
 	if (ft_get_input(&data, argc, argv) == RETURN_FAILURE)
 		return (RETURN_FAILURE);
 	if (ft_set_table(&data) == RETURN_FAILURE)
-		return (ft_clear_table(&data), RETURN_FAILURE);
+		return (RETURN_FAILURE);
 	if (ft_simulation(&data) == RETURN_FAILURE)
 		return (ft_clear_table(&data), RETURN_FAILURE);
 	return (ft_clear_table(&data), RETURN_SUCCESS);
