@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 12:00:18 by arabenst          #+#    #+#             */
-/*   Updated: 2023/05/09 10:36:20 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/05 17:58:06 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,22 +23,22 @@ static void	ft_puterror(const char *fault, const char *expectation)
 
 static void	ft_arg_error(char err)
 {
-	printf("\nERROR!\nInvalid argument ");
+	printf("\nERROR!\nInvalid argument %d", err - 2);
 	if (err == ERR_ARG_PHILO)
-		printf("'number_of_philosophers'(1)");
-	else if (err == ERR_ARG_DIE_TIME)
-		printf("'time_to_die'(2)");
-	else if (err == ERR_ARG_EAT_TIME)
-		printf("'time_to_eat'(3)");
-	else if (err == ERR_ARG_SLEEP_TIME)
-		printf("'time_to_sleep'(4)");
+		printf("(number_of_philosophers)");
+	else if (err == ERR_ARG_TT_DIE)
+		printf("(time_to_die)");
+	else if (err == ERR_ARG_TT_EAT)
+		printf("(time_to_eat)");
+	else if (err == ERR_ARG_TT_SLEEP)
+		printf("(time_to_sleep)");
 	if (err == ERR_ARG_EAT_LIMIT)
 	{
-		printf("'number_of_times_each_philosopher_must_eat'(5)");
-		ft_puterror("", "A positive int.");
+		printf("(number_of_times_each_philosopher_must_eat)");
+		ft_puterror("", "A non-negative integer");
 	}
 	else
-		ft_puterror("", "A non-negative int.");
+		ft_puterror("", "A positive integer");
 }
 
 void	ft_error(char err)
@@ -53,10 +53,6 @@ void	ft_error(char err)
 		ft_arg_error(err);
 	else if (err == ERR_PTHREAD_CREATE)
 		ft_puterror("Failed to create threads!", "");
-	else if (err == ERR_PTHREAD_JOIN)
-		ft_puterror("Failed to join threads!", "");
 	else if (err == ERR_MUTEX_INIT)
 		ft_puterror("Failed to initialize mutexes!", "");
-	else if (err == ERR_MUTEX_DESTROY)
-		ft_puterror("Failed to destroy mutexes!", "");
 }

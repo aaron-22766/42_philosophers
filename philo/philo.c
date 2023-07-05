@@ -6,20 +6,11 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:24:16 by arabenst          #+#    #+#             */
-/*   Updated: 2023/05/09 10:29:52 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:43:08 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-static void	ft_init_data(t_data *data)
-{
-	data->eat_limit = 0;
-	data->exit = false;
-	data->philos = NULL;
-	data->threads = NULL;
-	data->mtx_forks = NULL;
-}
 
 static bool	ft_get_input(t_data *data, int argc, char **argv)
 {
@@ -30,15 +21,15 @@ static bool	ft_get_input(t_data *data, int argc, char **argv)
 	data->philo_amount = ft_atoi(argv[1]);
 	if (data->philo_amount < 1)
 		return (ft_error(ERR_ARG_PHILO), RETURN_FAILURE);
-	data->die_time = ft_atoi(argv[2]);
-	if (data->die_time < 1)
-		return (ft_error(ERR_ARG_DIE_TIME), RETURN_FAILURE);
-	data->eat_time = ft_atoi(argv[3]);
-	if (data->eat_time < 1)
-		return (ft_error(ERR_ARG_EAT_TIME), RETURN_FAILURE);
-	data->sleep_time = ft_atoi(argv[4]);
-	if (data->sleep_time < 1)
-		return (ft_error(ERR_ARG_SLEEP_TIME), RETURN_FAILURE);
+	data->tt_die = ft_atoi(argv[2]);
+	if (data->tt_die < 1)
+		return (ft_error(ERR_ARG_TT_DIE), RETURN_FAILURE);
+	data->tt_eat = ft_atoi(argv[3]);
+	if (data->tt_eat < 1)
+		return (ft_error(ERR_ARG_TT_EAT), RETURN_FAILURE);
+	data->tt_sleep = ft_atoi(argv[4]);
+	if (data->tt_sleep < 1)
+		return (ft_error(ERR_ARG_TT_SLEEP), RETURN_FAILURE);
 	if (argc == 6)
 	{
 		data->eat_limit = ft_atoi(argv[5]);
@@ -48,7 +39,17 @@ static bool	ft_get_input(t_data *data, int argc, char **argv)
 	return (RETURN_SUCCESS);
 }
 
-static bool	ft_init_table(t_data *data)
+static void	ft_init_philo(t_data *data, int i)
+{
+	data->philos[i].id = i + 1;
+	data->philos[i].eat_count = 0;
+	data->philos[i].mtx_fork_l = &data->mtx_forks[i];
+	data->philos[i].mtx_fork_r
+		= &data->mtx_forks[(i + 1) % data->philo_amount];
+	data->philos[i].data = data;
+}
+
+static bool	ft_set_table(t_data *data)
 {
 	int	i;
 
@@ -59,28 +60,53 @@ static bool	ft_init_table(t_data *data)
 		return (ft_error(ERR_MEM), RETURN_FAILURE);
 	i = -1;
 	while (++i < data->philo_amount)
-	{
-		data->philos[i].id = i + 1;
-		data->philos[i].eat_count = 0;
-		data->philos[i].data = data;
-		data->philo_mtx_last_eaten_count = 0;
-		data->mtx_exit_count = 0;
-		data->mtx_forks_count = 0;
-	}
+		if (pthread_mutex_init(&data->mtx_forks[i], NULL)
+			|| pthread_mutex_init(&data->philos[i].mtx_eat_count, NULL)
+			|| pthread_mutex_init(&data->philos[i].mtx_time_last_eaten, NULL))
+			break ;
+	if (i != data->philo_amount
+		|| pthread_mutex_init(&data->mtx_exit, NULL)
+		|| pthread_mutex_init(&data->mtx_printf, NULL))
+		return (ft_error(ERR_MUTEX_INIT), RETURN_FAILURE);
+	i = -1;
+	while (++i < data->philo_amount)
+		ft_init_philo(data, i);
 	return (RETURN_SUCCESS);
+}
+
+static void	ft_clear_table(t_data *data)
+{
+	int	i;
+
+	i = -1;
+	while (++i < data->philo_amount)
+	{
+		pthread_join(data->threads[i], NULL);
+		pthread_mutex_destroy(&data->mtx_forks[i]);
+		pthread_mutex_destroy(&data->philos[i].mtx_eat_count);
+		pthread_mutex_destroy(&data->philos[i].mtx_time_last_eaten);
+	}
+	pthread_mutex_destroy(&data->mtx_exit);
+	pthread_mutex_destroy(&data->mtx_printf);
+	free(data->threads);
+	free(data->mtx_forks);
+	free(data->philos);
 }
 
 int	main(int argc, char **argv)
 {
 	t_data	data;
 
-	ft_init_data(&data);
+	data.eat_limit = 0;
+	data.exit = false;
+	data.philos = NULL;
+	data.threads = NULL;
+	data.mtx_forks = NULL;
 	if (ft_get_input(&data, argc, argv) == RETURN_FAILURE)
 		return (RETURN_FAILURE);
-	if (ft_init_table(&data) == RETURN_FAILURE)
-		return (ft_free_data(&data), RETURN_FAILURE);
+	if (ft_set_table(&data) == RETURN_FAILURE)
+		return (ft_clear_table(&data), RETURN_FAILURE);
 	if (ft_simulation(&data) == RETURN_FAILURE)
-		return (ft_free_data(&data), RETURN_FAILURE);
-	// printf("____________________________\n%d threads took %d ms to run\n", data.philo_amount, ft_timer(&data.tp_start));
-	return (ft_free_data(&data), RETURN_SUCCESS);
+		return (ft_clear_table(&data), RETURN_FAILURE);
+	return (ft_clear_table(&data), RETURN_SUCCESS);
 }

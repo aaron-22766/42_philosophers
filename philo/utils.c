@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 10:36:30 by arabenst          #+#    #+#             */
-/*   Updated: 2023/05/09 10:33:59 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:10:23 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,31 +45,26 @@ int	ft_atoi(const char *str)
 
 void	ft_print_state(t_philo *philo, const char *state)
 {
-	printf("%d %d %s\n", ft_timer(philo->data->tp_start), philo->id, state);
+	pthread_mutex_lock(&philo->data->mtx_printf);
+	if (ft_get_exit(philo->data) == false)
+		printf("%lld %d %s\n",
+			ft_get_time(philo->data->time_start), philo->id, state);
+	pthread_mutex_unlock(&philo->data->mtx_printf);
 }
 
-int	ft_timer(struct timeval tp_start)
+uint64_t	ft_get_time(uint64_t start)
 {
-	struct timeval	tp_end;
+	struct timeval	now;
 
-	gettimeofday(&tp_end, NULL);
-	return ((tp_end.tv_sec - tp_start.tv_sec) * 1000
-		+ (tp_end.tv_usec - tp_start.tv_usec) / 1000);
+	gettimeofday(&now, NULL);
+	return ((now.tv_sec * (uint64_t)1000) + (now.tv_usec / 1000) - start);
 }
 
-void	ft_sleep(t_data *data, int ms)
+void	ft_wait(uint64_t ms)
 {
-	struct timeval	tp_start;
+	u_int64_t	start;
 
-	gettimeofday(&tp_start, NULL);
-	while (!ft_is_exit(data) && ft_timer(tp_start) < ms)
-		usleep(5);
-}
-
-void	ft_free_data(t_data *data)
-{
-	free(data->philos);
-	free(data->threads);
-	free(data->mtx_forks);
-	// system("leaks philo");
+	start = ft_get_time(0);
+	while (ft_get_time(start) < ms)
+		usleep(500);
 }
