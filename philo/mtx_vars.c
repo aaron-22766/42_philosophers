@@ -6,13 +6,13 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/05 14:56:29 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 18:40:52 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/06 17:05:05 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-bool	ft_get_exit(t_data *data)
+bool	ft_is_exit(t_data *data)
 {
 	bool	exit;
 
@@ -32,9 +32,9 @@ int	ft_get_eat_count(t_philo *philo)
 	return (eat_count);
 }
 
-uint64_t	ft_get_time_last_eaten(t_philo *philo)
+u_int64_t	ft_get_time_last_eaten(t_philo *philo)
 {
-	uint64_t	time_last_eaten;
+	u_int64_t	time_last_eaten;
 
 	pthread_mutex_lock(&philo->mtx_time_last_eaten);
 	time_last_eaten = philo->time_last_eaten;

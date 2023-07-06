@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 10:36:30 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 18:10:23 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:12:41 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,12 @@ int	ft_atoi(const char *str)
 	i = 0;
 	result = 0;
 	if (str[i] == '-')
-		return (-1);
+	{
+		while (str[++i])
+			if (str[i] != '0')
+				return (-1);
+		return (0);
+	}
 	if (str[i] == '+')
 		i++;
 	while (str[i])
@@ -45,22 +50,27 @@ int	ft_atoi(const char *str)
 
 void	ft_print_state(t_philo *philo, const char *state)
 {
+	u_int64_t	timestamp;
+
+	timestamp = ft_get_time(philo->data->time_start);
 	pthread_mutex_lock(&philo->data->mtx_printf);
-	if (ft_get_exit(philo->data) == false)
-		printf("%lld %d %s\n",
-			ft_get_time(philo->data->time_start), philo->id, state);
+	if (!ft_is_exit(philo->data))
+	{
+		printf("%"PRIu64, timestamp);//remove
+		printf(" %d %s\n", philo->id, state);
+	}
 	pthread_mutex_unlock(&philo->data->mtx_printf);
 }
 
-uint64_t	ft_get_time(uint64_t start)
+u_int64_t	ft_get_time(u_int64_t relative)
 {
 	struct timeval	now;
 
 	gettimeofday(&now, NULL);
-	return ((now.tv_sec * (uint64_t)1000) + (now.tv_usec / 1000) - start);
+	return ((now.tv_sec * (u_int64_t)1000) + (now.tv_usec / 1000) - relative);
 }
 
-void	ft_wait(uint64_t ms)
+void	ft_wait(u_int64_t ms)
 {
 	u_int64_t	start;
 

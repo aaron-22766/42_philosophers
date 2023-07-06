@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 09:38:31 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 18:41:47 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:23:08 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,16 +16,28 @@ static void	*ft_one_philo(t_philo *philo)
 {
 	pthread_mutex_lock(philo->mtx_fork_l);
 	ft_print_state(philo, "has taken a fork");
-	while (ft_get_exit(philo->data) == false)
+	while (!ft_is_exit(philo->data))
 		usleep(10);
 	pthread_mutex_unlock(philo->mtx_fork_l);
 	return (NULL);
 }
 
-static void	ft_take_fork(t_philo *philo, pthread_mutex_t *fork)
+static void	ft_take_forks(t_philo *philo)
 {
-	pthread_mutex_lock(fork);
-	ft_print_state(philo, "has taken a fork");
+	if (philo->id % 2 == 0)
+	{
+		pthread_mutex_lock(philo->mtx_fork_r);
+		ft_print_state(philo, "has taken a fork");
+		pthread_mutex_lock(philo->mtx_fork_l);
+		ft_print_state(philo, "has taken a fork");
+	}
+	else
+	{
+		pthread_mutex_lock(philo->mtx_fork_l);
+		ft_print_state(philo, "has taken a fork");
+		pthread_mutex_lock(philo->mtx_fork_r);
+		ft_print_state(philo, "has taken a fork");
+	}
 }
 
 static void	*ft_routine(void *arg)
@@ -35,18 +47,14 @@ static void	*ft_routine(void *arg)
 	philo = arg;
 	if (philo->data->philo_amount == 1)
 		return (ft_one_philo(philo));
-	while (ft_get_exit(philo->data) == false && (!philo->data->eat_limit
-			|| ft_get_eat_count(philo) < philo->data->eat_limit))
+	while (!ft_is_exit(philo->data))
 	{
-		if (philo->id % 2 == 0)
-			usleep(philo->data->tt_eat / 2);
-		ft_take_fork(philo, philo->mtx_fork_l);
-		ft_take_fork(philo, philo->mtx_fork_r);
+		ft_take_forks(philo);
 		ft_print_state(philo, "is eating");
 		ft_set_time_last_eaten(philo);
 		ft_wait(philo->data->tt_eat);
-		pthread_mutex_unlock(philo->mtx_fork_l);
 		pthread_mutex_unlock(philo->mtx_fork_r);
+		pthread_mutex_unlock(philo->mtx_fork_l);
 		ft_print_state(philo, "is sleeping");
 		ft_increment_eat_count(philo);
 		ft_wait(philo->data->tt_sleep);
@@ -67,12 +75,12 @@ static void	ft_monitor_philos(t_data *data)
 		while (++i < data->philo_amount)
 		{
 			if (ft_get_time(ft_get_time_last_eaten(&data->philos[i]))
-				> (uint64_t)data->tt_die)
+				> (u_int64_t)data->tt_die)
 			{
 				ft_print_state(&data->philos[i], "died");
 				return ;
 			}
-			if (data->eat_limit
+			if (data->eat_limit > 0
 				&& ft_get_eat_count(&data->philos[i]) >= data->eat_limit)
 				philos_eaten++;
 		}

@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:24:16 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 19:08:11 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:08:08 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ static bool	ft_get_input(t_data *data, int argc, char **argv)
 	data->tt_sleep = ft_atoi(argv[4]);
 	if (data->tt_sleep < 1)
 		return (ft_error(ERR_ARG_TT_SLEEP), RETURN_FAILURE);
+	data->eat_limit = -1;
 	if (argc == 6)
 	{
 		data->eat_limit = ft_atoi(argv[5]);
@@ -39,26 +40,25 @@ static bool	ft_get_input(t_data *data, int argc, char **argv)
 	return (RETURN_SUCCESS);
 }
 
-static void	ft_init_philo(t_data *data, int i)
+static bool	ft_init_data(t_data *data)
 {
-	data->philos[i].id = i + 1;
-	data->philos[i].eat_count = 0;
-	data->philos[i].mtx_fork_l = &data->mtx_forks[i];
-	data->philos[i].mtx_fork_r
-		= &data->mtx_forks[(i + 1) % data->philo_amount];
-	data->philos[i].data = data;
+	data->philos = malloc(data->philo_amount * sizeof(t_philo));
+	if (!data->philos)
+		return (RETURN_FAILURE);
+	data->threads = malloc(data->philo_amount * sizeof(pthread_t));
+	if (!data->threads)
+		return (free(data->philos), RETURN_FAILURE);
+	data->mtx_forks = malloc(data->philo_amount * sizeof(pthread_mutex_t));
+	if (!data->mtx_forks)
+		return (free(data->philos), free(data->threads), RETURN_FAILURE);
+	return (RETURN_SUCCESS);
+	data->exit = false;
 }
 
-static bool	ft_set_table(t_data *data)
+static void	ft_set_table(t_data *data)
 {
 	int	i;
 
-	data->philos = malloc(data->philo_amount * sizeof(t_philo));
-	data->threads = malloc(data->philo_amount * sizeof(pthread_t));
-	data->mtx_forks = malloc(data->philo_amount * sizeof(pthread_mutex_t));
-	if (!data->philos || !data->threads || !data->mtx_forks)
-		return (free(data->threads), free(data->mtx_forks),
-			free(data->philos), ft_error(ERR_MEM), RETURN_FAILURE);
 	i = -1;
 	while (++i < data->philo_amount)
 	{
@@ -70,8 +70,14 @@ static bool	ft_set_table(t_data *data)
 	pthread_mutex_init(&data->mtx_printf, NULL);
 	i = -1;
 	while (++i < data->philo_amount)
-		ft_init_philo(data, i);
-	return (RETURN_SUCCESS);
+	{
+		data->philos[i].id = i + 1;
+		data->philos[i].eat_count = 0;
+		data->philos[i].mtx_fork_l = &data->mtx_forks[i];
+		data->philos[i].mtx_fork_r
+			= &data->mtx_forks[(i + 1) % data->philo_amount];
+		data->philos[i].data = data;
+	}
 }
 
 static void	ft_clear_table(t_data *data)
@@ -80,8 +86,10 @@ static void	ft_clear_table(t_data *data)
 
 	i = -1;
 	while (++i < data->philo_amount)
-	{
 		pthread_join(data->threads[i], NULL);
+	i = -1;
+	while (++i < data->philo_amount)
+	{
 		pthread_mutex_destroy(&data->mtx_forks[i]);
 		pthread_mutex_destroy(&data->philos[i].mtx_eat_count);
 		pthread_mutex_destroy(&data->philos[i].mtx_time_last_eaten);
@@ -97,16 +105,14 @@ int	main(int argc, char **argv)
 {
 	t_data	data;
 
-	data.eat_limit = 0;
-	data.exit = false;
-	data.philos = NULL;
-	data.threads = NULL;
-	data.mtx_forks = NULL;
 	if (ft_get_input(&data, argc, argv) == RETURN_FAILURE)
-		return (RETURN_FAILURE);
-	if (ft_set_table(&data) == RETURN_FAILURE)
-		return (RETURN_FAILURE);
+		return (EXIT_FAILURE);
+	if (data.eat_limit == 0)
+		return (EXIT_SUCCESS);
+	if (ft_init_data(&data) == RETURN_FAILURE)
+		return (ft_error(ERR_MEM), EXIT_FAILURE);
+	ft_set_table(&data);
 	if (ft_simulation(&data) == RETURN_FAILURE)
-		return (ft_clear_table(&data), RETURN_FAILURE);
-	return (ft_clear_table(&data), RETURN_SUCCESS);
+		return (ft_clear_table(&data), EXIT_FAILURE);
+	return (ft_clear_table(&data), EXIT_SUCCESS);
 }
