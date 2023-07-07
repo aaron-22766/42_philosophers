@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/05 14:56:29 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/07 14:36:13 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 14:54:08 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,8 @@ bool	ft_increment_eat_count(t_philo *philo)
 	bool	exit;
 
 	pthread_mutex_lock(&philo->mtx_eat_count);
-	exit = (++philo->eat_count >= philo->data->eat_limit);
+	exit = (++philo->eat_count >= philo->data->eat_limit
+			&& philo->data->eat_limit > 0);
 	pthread_mutex_unlock(&philo->mtx_eat_count);
 	return (exit);
 }
