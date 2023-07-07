@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 12:00:18 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/05 17:58:06 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 09:38:59 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,6 @@ void	ft_error(char err)
 		ft_puterror("Too many arguments!", "4 or 5");
 	else if (err >= ERR_ARG_PHILO && err <= ERR_ARG_EAT_LIMIT)
 		ft_arg_error(err);
-	else if (err == ERR_PTHREAD_CREATE)
+	else if (err == ERR_THREAD)
 		ft_puterror("Failed to create threads!", "");
-	else if (err == ERR_MUTEX_INIT)
-		ft_puterror("Failed to initialize mutexes!", "");
 }

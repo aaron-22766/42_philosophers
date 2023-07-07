@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:23:08 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/06 16:27:57 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 14:34:10 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,13 @@ enum e_errors
 	ERR_ARG_TT_EAT,
 	ERR_ARG_TT_SLEEP,
 	ERR_ARG_EAT_LIMIT,
-	ERR_PTHREAD_CREATE,
-	ERR_MUTEX_INIT
+	ERR_THREAD
+};
+
+enum e_philo_vars
+{
+	TIME_LAST_EATEN,
+	INCREMENT_EAT_COUNT
 };
 
 /* ************************************************************************** */
@@ -61,11 +66,11 @@ typedef struct s_philo
 {
 	int				id;
 	int				eat_count;
-	pthread_mutex_t	mtx_eat_count;
 	u_int64_t		time_last_eaten;
-	pthread_mutex_t	mtx_time_last_eaten;
 	pthread_mutex_t	*mtx_fork_l;
 	pthread_mutex_t	*mtx_fork_r;
+	pthread_mutex_t	mtx_eat_count;
+	pthread_mutex_t	mtx_time_last_eaten;
 	struct s_data	*data;
 }	t_philo;
 
@@ -76,13 +81,15 @@ typedef struct s_data
 	int				tt_eat;
 	int				tt_sleep;
 	int				eat_limit;
-	struct s_philo	*philos;
-	pthread_t		*threads;
-	pthread_mutex_t	*mtx_forks;
-	u_int64_t		time_start;
 	bool			exit;
+	u_int64_t		time_start;
+	struct s_philo	*philos;
 	pthread_mutex_t	mtx_exit;
 	pthread_mutex_t	mtx_printf;
+	pthread_mutex_t	*mtx_forks;
+	pthread_t		*threads;
+	pthread_t		monitor_death;
+	pthread_t		monitor_eat_limit;
 }	t_data;
 
 /* ************************************************************************** */
@@ -94,19 +101,21 @@ typedef struct s_data
 // simulation.c
 bool		ft_simulation(t_data *data);
 
+// routine.c
+void		*ft_routine(void *arg);
+
 // mtx_vars.c
 bool		ft_is_exit(t_data *data);
-int			ft_get_eat_count(t_philo *philo);
-u_int64_t	ft_get_time_last_eaten(t_philo *philo);
-void		ft_increment_eat_count(t_philo *philo);
+void		ft_set_exit(t_data *data);
 void		ft_set_time_last_eaten(t_philo *philo);
+bool		ft_increment_eat_count(t_philo *philo);
 
 // utils.c
+u_int64_t	ft_get_time(u_int64_t relative);
+void		ft_wait(u_int64_t ms);
+void		ft_print_state(t_philo *philo, const char *state);
 size_t		ft_strlen(const char *s);
 int			ft_atoi(const char *str);
-void		ft_print_state(t_philo *philo, const char *state);
-u_int64_t	ft_get_time(u_int64_t start);
-void		ft_wait(u_int64_t ms);
 
 // error.c
 void		ft_error(char code);

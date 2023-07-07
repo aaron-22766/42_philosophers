@@ -6,87 +6,70 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 09:38:31 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/06 19:23:08 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 14:09:57 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static void	*ft_one_philo(t_philo *philo)
+static u_int64_t	ft_get_time_last_eaten(t_philo *philo)
 {
-	pthread_mutex_lock(philo->mtx_fork_l);
-	ft_print_state(philo, "has taken a fork");
-	while (!ft_is_exit(philo->data))
-		usleep(10);
-	pthread_mutex_unlock(philo->mtx_fork_l);
-	return (NULL);
+	u_int64_t	time_last_eaten;
+
+	pthread_mutex_lock(&philo->mtx_time_last_eaten);
+	time_last_eaten = philo->time_last_eaten;
+	pthread_mutex_unlock(&philo->mtx_time_last_eaten);
+	return (time_last_eaten);
 }
 
-static void	ft_take_forks(t_philo *philo)
+static void	*ft_monitor_death(void *arg)
 {
-	if (philo->id % 2 == 0)
-	{
-		pthread_mutex_lock(philo->mtx_fork_r);
-		ft_print_state(philo, "has taken a fork");
-		pthread_mutex_lock(philo->mtx_fork_l);
-		ft_print_state(philo, "has taken a fork");
-	}
-	else
-	{
-		pthread_mutex_lock(philo->mtx_fork_l);
-		ft_print_state(philo, "has taken a fork");
-		pthread_mutex_lock(philo->mtx_fork_r);
-		ft_print_state(philo, "has taken a fork");
-	}
-}
+	t_data	*data;
+	int		i;
 
-static void	*ft_routine(void *arg)
-{
-	t_philo	*philo;
-
-	philo = arg;
-	if (philo->data->philo_amount == 1)
-		return (ft_one_philo(philo));
-	while (!ft_is_exit(philo->data))
+	data = arg;
+	while (!ft_is_exit(data))
 	{
-		ft_take_forks(philo);
-		ft_print_state(philo, "is eating");
-		ft_set_time_last_eaten(philo);
-		ft_wait(philo->data->tt_eat);
-		pthread_mutex_unlock(philo->mtx_fork_r);
-		pthread_mutex_unlock(philo->mtx_fork_l);
-		ft_print_state(philo, "is sleeping");
-		ft_increment_eat_count(philo);
-		ft_wait(philo->data->tt_sleep);
-		ft_print_state(philo, "is thinking");
-	}
-	return (NULL);
-}
-
-static void	ft_monitor_philos(t_data *data)
-{
-	int	philos_eaten;
-	int	i;
-
-	while (true)
-	{
-		philos_eaten = 0;
 		i = -1;
 		while (++i < data->philo_amount)
 		{
 			if (ft_get_time(ft_get_time_last_eaten(&data->philos[i]))
 				> (u_int64_t)data->tt_die)
-			{
-				ft_print_state(&data->philos[i], "died");
-				return ;
-			}
-			if (data->eat_limit > 0
-				&& ft_get_eat_count(&data->philos[i]) >= data->eat_limit)
-				philos_eaten++;
+				return (ft_print_state(&data->philos[i], "died"),
+					ft_set_exit(data), NULL);
 		}
-		if (philos_eaten == data->philo_amount)
-			return ;
+		usleep(1000);
 	}
+	return (NULL);
+}
+
+static	int	ft_get_eat_count(t_philo *philo)
+{
+	int	eat_count;
+
+	pthread_mutex_lock(&philo->mtx_eat_count);
+	eat_count = philo->eat_count;
+	pthread_mutex_unlock(&philo->mtx_eat_count);
+	return (eat_count);
+}
+
+static void	*ft_monitor_eat_limit(void *arg)
+{
+	t_data	*data;
+	int		i;
+
+	data = arg;
+	while (!ft_is_exit(data))
+	{
+		i = -1;
+		while (++i < data->philo_amount)
+			if (ft_get_eat_count(&data->philos[i]) < data->eat_limit)
+				break ;
+		if (i == data->philo_amount)
+			return (ft_set_exit(data), NULL);
+		usleep(1000);
+	}
+	return (NULL);
 }
 
 bool	ft_simulation(t_data *data)
@@ -99,12 +82,13 @@ bool	ft_simulation(t_data *data)
 		data->philos[i].time_last_eaten = data->time_start;
 	i = -1;
 	while (++i < data->philo_amount)
-		if (pthread_create(&data->threads[i], NULL, &ft_routine,
-				&data->philos[i]))
-			return (ft_error(ERR_PTHREAD_CREATE), RETURN_FAILURE);
-	ft_monitor_philos(data);
-	pthread_mutex_lock(&data->mtx_exit);
-	data->exit = true;
-	pthread_mutex_unlock(&data->mtx_exit);
+		if (pthread_create(&data->threads[i], NULL,
+				&ft_routine, &data->philos[i]))
+			return (RETURN_FAILURE);
+	if (pthread_create(&data->monitor_death, NULL, &ft_monitor_death, data)
+		|| (data->eat_limit > 0 && data->philo_amount > 1
+			&& pthread_create(&data->monitor_eat_limit, NULL,
+				&ft_monitor_eat_limit, data)))
+		return (RETURN_FAILURE);
 	return (RETURN_SUCCESS);
 }

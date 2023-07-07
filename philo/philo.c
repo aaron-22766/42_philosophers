@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:24:16 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/06 19:08:08 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 13:17:10 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,7 @@ static void	ft_set_table(t_data *data)
 
 	i = -1;
 	while (++i < data->philo_amount)
-	{
 		pthread_mutex_init(&data->mtx_forks[i], NULL);
-		pthread_mutex_init(&data->philos[i].mtx_eat_count, NULL);
-		pthread_mutex_init(&data->philos[i].mtx_time_last_eaten, NULL);
-	}
 	pthread_mutex_init(&data->mtx_exit, NULL);
 	pthread_mutex_init(&data->mtx_printf, NULL);
 	i = -1;
@@ -76,6 +72,8 @@ static void	ft_set_table(t_data *data)
 		data->philos[i].mtx_fork_l = &data->mtx_forks[i];
 		data->philos[i].mtx_fork_r
 			= &data->mtx_forks[(i + 1) % data->philo_amount];
+		pthread_mutex_init(&data->philos[i].mtx_eat_count, NULL);
+		pthread_mutex_init(&data->philos[i].mtx_time_last_eaten, NULL);
 		data->philos[i].data = data;
 	}
 }
@@ -84,6 +82,9 @@ static void	ft_clear_table(t_data *data)
 {
 	int	i;
 
+	pthread_join(data->monitor_death, NULL);
+	if (data->eat_limit > 0 && data->philo_amount > 1)
+		pthread_join(data->monitor_eat_limit, NULL);
 	i = -1;
 	while (++i < data->philo_amount)
 		pthread_join(data->threads[i], NULL);
@@ -113,6 +114,6 @@ int	main(int argc, char **argv)
 		return (ft_error(ERR_MEM), EXIT_FAILURE);
 	ft_set_table(&data);
 	if (ft_simulation(&data) == RETURN_FAILURE)
-		return (ft_clear_table(&data), EXIT_FAILURE);
+		return (ft_error(ERR_THREAD), ft_clear_table(&data), EXIT_FAILURE);
 	return (ft_clear_table(&data), EXIT_SUCCESS);
 }

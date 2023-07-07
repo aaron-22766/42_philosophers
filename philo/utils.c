@@ -6,11 +6,42 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 10:36:30 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/06 19:12:41 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/07 12:00:20 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	ft_print_state(t_philo *philo, const char *state)
+{
+	u_int64_t	timestamp;
+
+	timestamp = ft_get_time(philo->data->time_start);
+	pthread_mutex_lock(&philo->data->mtx_printf);
+	if (!ft_is_exit(philo->data))
+	{
+		printf("%"PRIu64, timestamp);//remove
+		printf(" %d %s\n", philo->id, state);
+	}
+	pthread_mutex_unlock(&philo->data->mtx_printf);
+}
+
+u_int64_t	ft_get_time(u_int64_t relative)
+{
+	struct timeval	now;
+
+	gettimeofday(&now, NULL);
+	return ((now.tv_sec * (u_int64_t)1000) + (now.tv_usec / 1000) - relative);
+}
+
+void	ft_wait(u_int64_t ms)
+{
+	u_int64_t	start;
+
+	start = ft_get_time(0);
+	while (ft_get_time(start) < ms)
+		usleep(500);
+}
 
 size_t	ft_strlen(const char *s)
 {
@@ -46,35 +77,4 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	return (result);
-}
-
-void	ft_print_state(t_philo *philo, const char *state)
-{
-	u_int64_t	timestamp;
-
-	timestamp = ft_get_time(philo->data->time_start);
-	pthread_mutex_lock(&philo->data->mtx_printf);
-	if (!ft_is_exit(philo->data))
-	{
-		printf("%"PRIu64, timestamp);//remove
-		printf(" %d %s\n", philo->id, state);
-	}
-	pthread_mutex_unlock(&philo->data->mtx_printf);
-}
-
-u_int64_t	ft_get_time(u_int64_t relative)
-{
-	struct timeval	now;
-
-	gettimeofday(&now, NULL);
-	return ((now.tv_sec * (u_int64_t)1000) + (now.tv_usec / 1000) - relative);
-}
-
-void	ft_wait(u_int64_t ms)
-{
-	u_int64_t	start;
-
-	start = ft_get_time(0);
-	while (ft_get_time(start) < ms)
-		usleep(500);
 }
