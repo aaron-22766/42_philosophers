@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 09:28:37 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/10 16:41:48 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/10 16:50:45 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ void	*ft_routine(void *arg)
 		return (ft_one_philo(philo));
 	if (philo->id % 2)
 		usleep(50);
-	while (!ft_is_exit(philo->data)
-		&& ft_get_eat_count(philo) < philo->data->eat_limit)
+	while (!ft_is_exit(philo->data) && (philo->data->eat_limit < 0
+			|| ft_get_eat_count(philo) < philo->data->eat_limit))
 	{
 		ft_take_forks(philo);
 		ft_print_state(philo, "is eating");
