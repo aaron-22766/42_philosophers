@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 09:38:31 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/07 14:09:57 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/10 16:38:50 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,16 +41,6 @@ static void	*ft_monitor_death(void *arg)
 		usleep(1000);
 	}
 	return (NULL);
-}
-
-static	int	ft_get_eat_count(t_philo *philo)
-{
-	int	eat_count;
-
-	pthread_mutex_lock(&philo->mtx_eat_count);
-	eat_count = philo->eat_count;
-	pthread_mutex_unlock(&philo->mtx_eat_count);
-	return (eat_count);
 }
 
 static void	*ft_monitor_eat_limit(void *arg)

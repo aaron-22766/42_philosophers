@@ -6,27 +6,17 @@
 #    By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/14 17:40:26 by arabenst          #+#    #+#              #
-#    Updated: 2023/07/06 12:59:00 by arabenst         ###   ########.fr        #
+#    Updated: 2023/07/10 16:39:59 by arabenst         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-ifeq ($(shell uname),Linux)
-NAME		=	philo_linux
-OBJDIR		=	./obj_linux
-else
 NAME		=	philo
-OBJDIR		=	./obj
-endif
-# remove if
 
 SRCDIR		=	.
+OBJDIR		=	./obj
 
 SRCS		=	$(wildcard $(SRCDIR)/*.c)
 OBJS		=	$(addprefix $(OBJDIR)/,$(notdir $(SRCS:.c=.o)))
-
-# **************************************************************************** #
-#                               REMOVE WILDCARD                                #
-# **************************************************************************** #
 
 CC			=	cc
 TSAN		=	#-fsanitize=thread

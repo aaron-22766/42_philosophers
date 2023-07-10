@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 09:28:37 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/07 14:35:33 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/10 16:41:48 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,18 +62,18 @@ void	*ft_routine(void *arg)
 	if (philo->data->philo_amount == 1)
 		return (ft_one_philo(philo));
 	if (philo->id % 2)
-		usleep(42);
-	while (!ft_is_exit(philo->data))
+		usleep(50);
+	while (!ft_is_exit(philo->data)
+		&& ft_get_eat_count(philo) < philo->data->eat_limit)
 	{
 		ft_take_forks(philo);
 		ft_print_state(philo, "is eating");
-		ft_set_time_last_eaten(philo);
-		if (ft_is_exit(philo->data))
+		if (ft_set_time_last_eaten(philo) && ft_is_exit(philo->data))
 			return (ft_put_forks(philo), NULL);
 		ft_wait(philo->data->tt_eat);
 		ft_put_forks(philo);
 		ft_print_state(philo, "is sleeping");
-		if (ft_increment_eat_count(philo) || ft_is_exit(philo->data))
+		if (ft_increment_eat_count(philo) && ft_is_exit(philo->data))
 			return (NULL);
 		ft_wait(philo->data->tt_sleep);
 		ft_print_state(philo, "is thinking");

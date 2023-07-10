@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:23:08 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/07 14:34:10 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/10 16:41:53 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@
 # include <unistd.h>
 # include <pthread.h>
 # include <sys/time.h>
-# include <inttypes.h>
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
@@ -107,8 +106,9 @@ void		*ft_routine(void *arg);
 // mtx_vars.c
 bool		ft_is_exit(t_data *data);
 void		ft_set_exit(t_data *data);
-void		ft_set_time_last_eaten(t_philo *philo);
+bool		ft_set_time_last_eaten(t_philo *philo);
 bool		ft_increment_eat_count(t_philo *philo);
+int			ft_get_eat_count(t_philo *philo);
 
 // utils.c
 u_int64_t	ft_get_time(u_int64_t relative);
