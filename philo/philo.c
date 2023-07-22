@@ -6,7 +6,7 @@
 /*   By: arabenst <arabenst@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:24:16 by arabenst          #+#    #+#             */
-/*   Updated: 2023/07/07 13:17:10 by arabenst         ###   ########.fr       */
+/*   Updated: 2023/07/22 18:34:53 by arabenst         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,8 @@ static bool	ft_init_data(t_data *data)
 	data->mtx_forks = malloc(data->philo_amount * sizeof(pthread_mutex_t));
 	if (!data->mtx_forks)
 		return (free(data->philos), free(data->threads), RETURN_FAILURE);
-	return (RETURN_SUCCESS);
 	data->exit = false;
+	return (RETURN_SUCCESS);
 }
 
 static void	ft_set_table(t_data *data)
