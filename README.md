@@ -2,7 +2,7 @@
 	<p>
 	philosophers
 	</p>
-	<img src="https://github.com/ayogun/42-project-badges/blob/main/badges/philosopherse.png">
+	<img src="https://github.com/aaron-22766/aaron-22766/blob/main/42-badges/philosopherse.png">
 </h1>
 
 <p align="center">
